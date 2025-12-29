@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for academic feel */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Recipe card hover effects */
+.recipe-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Smooth transitions for all interactive elements */
+a, button {
+  transition: all 0.2s ease;
+}
