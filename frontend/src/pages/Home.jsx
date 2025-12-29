@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import RecipeGrid from '../components/RecipeGrid.jsx';
-import { useSavedRecipes } from '../hooks/useAuth.js';
+import { useAuth, useSavedRecipes } from '../hooks/useAuth.js';
 import { getRecommendations } from '../utils/recommendations.js';
 import { mockRecipes } from '../data/recipes.js';
 
 const Home = () => {
-  const { savedIds, isAuthenticated } = useSavedRecipes();
+  const { isAuthenticated } = useAuth();
+  const { savedIds } = useSavedRecipes();
   
   // Get recommendations based on saved recipes
   const recommendations = getRecommendations(savedIds, 6);

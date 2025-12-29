@@ -1,14 +1,24 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import TagPill from './TagPill.jsx';
-import { useSavedRecipes } from '../hooks/useAuth.js';
+import { useAuth, useSavedRecipes } from '../hooks/useAuth.js';
 
 const RecipeCard = ({ recipe, showSaveButton = true }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const { toggleSave, isSaved } = useSavedRecipes();
   const saved = isSaved(recipe.id);
 
   const handleSaveClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      const redirect = `${location.pathname}${location.search}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
+      return;
+    }
+
     toggleSave(recipe.id);
   };
 

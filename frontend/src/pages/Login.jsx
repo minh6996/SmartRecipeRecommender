@@ -8,7 +8,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login, isAuthenticated } = useAuth();
+  const { login, googleLogin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -21,6 +21,49 @@ const Login = () => {
       navigate(redirectTo);
     }
   }, [isAuthenticated, navigate, redirectTo]);
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+
+      const google = window.google;
+      const el = document.getElementById('google-signin');
+      if (!google?.accounts?.id || !el) {
+        if (attempts > 25) window.clearInterval(timer);
+        return;
+      }
+
+      window.clearInterval(timer);
+
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response) => {
+          try {
+            setError('');
+            setIsLoading(true);
+            await googleLogin(response.credential);
+            navigate(redirectTo);
+          } catch (err) {
+            setError(err?.message || 'Google login failed.');
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      });
+
+      google.accounts.id.renderButton(el, {
+        theme: 'outline',
+        size: 'large',
+        width: '360',
+      });
+    }, 200);
+
+    return () => window.clearInterval(timer);
+  }, [googleLogin, navigate, redirectTo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,6 +105,15 @@ const Login = () => {
                 {error}
               </div>
             )}
+
+            <div className="mb-6">
+              <div id="google-signin" className="flex justify-center" />
+              <div className="mt-4 flex items-center">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="px-3 text-xs text-gray-500">OR</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+            </div>
 
             {/* Email */}
             <div className="mb-4">
