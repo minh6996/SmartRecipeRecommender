@@ -2,14 +2,62 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useSavedRecipes } from '../hooks/useAuth.js';
 import { Link } from 'react-router-dom';
 import RecipeCard from '../components/RecipeCard.jsx';
-import { getRecipeById } from '../data/recipes.js';
+import EmptyState from '../components/EmptyState.jsx';
+import { useEffect, useMemo, useState } from 'react';
+import { apiGetRecipes } from '../utils/api.js';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
-  const { savedIds, clearSaved, isLoading } = useSavedRecipes();
+  const { user, logout, isAuthenticated } = useAuth();
+  const { savedIds, clearSaved, isLoading: savedIdsLoading } = useSavedRecipes();
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [recipesLoading, setRecipesLoading] = useState(true);
+  const [recipesError, setRecipesError] = useState('');
 
-  // Get saved recipe details
-  const savedRecipes = savedIds.map(id => getRecipeById(id)).filter(Boolean);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setRecipesLoading(true);
+        setRecipesError('');
+
+        if (!savedIds || savedIds.length === 0) {
+          if (!mounted) return;
+          setSavedRecipes([]);
+          return;
+        }
+
+        const hasObjectIds = savedIds.some((x) => /^[a-f0-9]{24}$/i.test(String(x)));
+        if (hasObjectIds) {
+          const data = await apiGetRecipes({ limit: 500 });
+          if (!mounted) return;
+          const savedSet = new Set(savedIds.map(String));
+          const all = Array.isArray(data.items) ? data.items : [];
+          setSavedRecipes(all.filter((r) => savedSet.has(String(r?._id))));
+        } else {
+          const data = await apiGetRecipes({ ids: savedIds });
+          if (!mounted) return;
+          setSavedRecipes(data.items || []);
+        }
+      } catch (err) {
+        if (!mounted) return;
+        setRecipesError(err?.message || 'Failed to load saved recipes');
+      } finally {
+        if (!mounted) return;
+        setRecipesLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [savedIds]);
+
+  const cuisinesExploredCount = useMemo(() => {
+    return new Set(savedRecipes.map((r) => r.cuisine)).size;
+  }, [savedRecipes]);
+
+  const favoriteTagsCount = useMemo(() => {
+    return new Set(savedRecipes.flatMap((r) => r.tags)).size;
+  }, [savedRecipes]);
 
   const handleLogout = () => {
     logout();
@@ -22,7 +70,19 @@ const Profile = () => {
     }
   };
 
-  if (isLoading) {
+  if (!isAuthenticated) {
+    return (
+      <EmptyState
+        title="Sign In to View Your Profile"
+        description="Login to manage your account and save recipes."
+        buttonText="Sign In"
+        buttonLink="/login"
+        icon="login"
+      />
+    );
+  }
+
+  if (savedIdsLoading || recipesLoading) {
     return (
       <div className="animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
@@ -32,6 +92,21 @@ const Profile = () => {
             <div key={index} className="bg-gray-200 h-64 rounded-lg"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (recipesError) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to load saved recipes</h2>
+        <p className="text-gray-600 mb-6">{recipesError}</p>
+        <Link
+          to="/recipes"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+        >
+          Browse Recipes
+        </Link>
       </div>
     );
   }
@@ -95,7 +170,7 @@ const Profile = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Cuisines Explored</p>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(savedRecipes.map(r => r.cuisine)).size}
+                {cuisinesExploredCount}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -111,7 +186,7 @@ const Profile = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Favorite Tags</p>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(savedRecipes.flatMap(r => r.tags)).size}
+                {favoriteTagsCount}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">

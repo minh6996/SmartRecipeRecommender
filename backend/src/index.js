@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
+import recipesRoutes from './routes/recipes.js';
+import interactionsRoutes from './routes/interactions.js';
 import { connectDb } from './db.js';
 
 const app = express();
@@ -28,6 +30,8 @@ app.use(express.json({ limit: '1mb' }));
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
+app.use('/api/recipes', recipesRoutes);
+app.use('/api/interactions', interactionsRoutes);
 
 await connectDb();
 

@@ -3,13 +3,41 @@ import { useSavedRecipes } from '../hooks/useAuth.js';
 import { getRecommendations } from '../utils/recommendations.js';
 import RecipeGrid from '../components/RecipeGrid.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import { useEffect, useState } from 'react';
+import { apiGetRecipes } from '../utils/api.js';
 
 const Recommendations = () => {
   const { isAuthenticated } = useAuth();
   const { savedIds, isLoading: savedLoading } = useSavedRecipes();
 
+  const [recipes, setRecipes] = useState([]);
+  const [recipesLoading, setRecipesLoading] = useState(true);
+  const [recipesError, setRecipesError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setRecipesLoading(true);
+        setRecipesError('');
+        const data = await apiGetRecipes({ limit: 500 });
+        if (!mounted) return;
+        setRecipes(data.items || []);
+      } catch (err) {
+        if (!mounted) return;
+        setRecipesError(err?.message || 'Failed to load recipes');
+      } finally {
+        if (!mounted) return;
+        setRecipesLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // Get personalized recommendations
-  const recommendations = getRecommendations(savedIds, 10);
+  const recommendations = getRecommendations(recipes, savedIds, 10);
 
   if (!isAuthenticated) {
     return (
@@ -23,7 +51,7 @@ const Recommendations = () => {
     );
   }
 
-  if (savedLoading) {
+  if (savedLoading || recipesLoading) {
     return (
       <div className="animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-1/2 mb-6"></div>
@@ -32,6 +60,15 @@ const Recommendations = () => {
             <div key={index} className="bg-gray-200 h-64 rounded-lg"></div>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (recipesError) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to load recipes</h2>
+        <p className="text-gray-600">{recipesError}</p>
       </div>
     );
   }

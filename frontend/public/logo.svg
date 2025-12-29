@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Smart Recipe Recommender">
+  <defs>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e5e7eb"/>
+    </linearGradient>
+    <linearGradient id="soup" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="128" height="128" rx="24" fill="#f9fafb"/>
+
+  <!-- steam -->
+  <path d="M44 34c-6 10 6 14 0 24" fill="none" stroke="#9ca3af" stroke-width="6" stroke-linecap="round"/>
+  <path d="M64 28c-6 10 6 14 0 24" fill="none" stroke="#9ca3af" stroke-width="6" stroke-linecap="round"/>
+  <path d="M84 34c-6 10 6 14 0 24" fill="none" stroke="#9ca3af" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- bowl -->
+  <ellipse cx="64" cy="72" rx="44" ry="16" fill="url(#soup)"/>
+  <path d="M18 72c6 26 23 42 46 42s40-16 46-42" fill="url(#bowl)" stroke="#374151" stroke-width="4" stroke-linecap="round"/>
+  <path d="M30 72c4 18 17 30 34 30s30-12 34-30" fill="none" stroke="#d1d5db" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- base -->
+  <path d="M40 112c4 8 44 8 48 0" fill="none" stroke="#374151" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- garnish -->
+  <circle cx="48" cy="70" r="6" fill="#22c55e"/>
+  <circle cx="66" cy="66" r="6" fill="#22c55e"/>
+  <circle cx="82" cy="72" r="6" fill="#22c55e"/>
+</svg>

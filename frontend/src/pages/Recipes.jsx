@@ -1,20 +1,45 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import RecipeGrid from '../components/RecipeGrid.jsx';
 import TagPill from '../components/TagPill.jsx';
-import { mockRecipes } from '../data/recipes.js';
 import { filterRecipes } from '../utils/recommendations.js';
+import { apiGetRecipes } from '../utils/api.js';
 
 const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
+  const [recipes, setRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+        const data = await apiGetRecipes({ limit: 500 });
+        if (!mounted) return;
+        setRecipes(data.items || []);
+      } catch (err) {
+        if (!mounted) return;
+        setError(err?.message || 'Failed to load recipes');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Available filter tags
   const filterTags = ['Quick', 'Healthy', 'Vegetarian', 'Vietnamese', 'Korean'];
 
   // Filter recipes based on search and tags
   const filteredRecipes = useMemo(() => {
-    return filterRecipes(mockRecipes, searchQuery, selectedTags);
-  }, [searchQuery, selectedTags]);
+    return filterRecipes(recipes, searchQuery, selectedTags);
+  }, [recipes, searchQuery, selectedTags]);
 
   // Toggle tag selection
   const toggleTag = (tag) => {
@@ -37,9 +62,26 @@ const Recipes = () => {
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">All Recipes</h1>
         <p className="text-gray-600">
-          Browse our collection of {mockRecipes.length} delicious recipes from around the world
+          Browse our collection of {recipes.length} delicious recipes from around the world
         </p>
       </div>
+
+      {isLoading && (
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="bg-gray-200 h-64 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {error && !isLoading && (
+        <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+          <p className="text-red-700">{error}</p>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -102,7 +144,7 @@ const Recipes = () => {
         <p className="text-gray-600">
           {filteredRecipes.length === 0 
             ? 'No recipes found' 
-            : `Showing ${filteredRecipes.length} of ${mockRecipes.length} recipes`
+            : `Showing ${filteredRecipes.length} of ${recipes.length} recipes`
           }
         </p>
         

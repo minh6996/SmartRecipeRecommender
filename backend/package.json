@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
+    "seed:recipes": "node src/seed/seedRecipes.js",
     "start": "node src/index.js"
   },
   "dependencies": {

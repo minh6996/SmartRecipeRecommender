@@ -4,6 +4,7 @@ export const mockRecipes = [
   {
     id: 1,
     title: "Vietnamese Pho Bo",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021411/Vietnamese_Pho_Bo_wnz0tj.jpg",
     cuisine: "Vietnamese",
     cookingTime: 180,
     tags: ["Traditional", "Soup", "Beef", "Vietnamese"],
@@ -29,6 +30,7 @@ export const mockRecipes = [
   {
     id: 2,
     title: "Korean Bibimbap",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021401/Korean_Bibimbap_vt1qtr.jpg",
     cuisine: "Korean",
     cookingTime: 45,
     tags: ["Quick", "Healthy", "Vegetarian", "Korean"],
@@ -53,6 +55,7 @@ export const mockRecipes = [
   {
     id: 3,
     title: "Thai Green Curry",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021409/Thai_Green_Curry_ua3vhy.jpg",
     cuisine: "Thai",
     cookingTime: 35,
     tags: ["Quick", "Spicy", "Thai"],
@@ -77,6 +80,7 @@ export const mockRecipes = [
   {
     id: 4,
     title: "Japanese Sushi Rolls",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021401/Japanese_Sushi_Rolls_tj7leh.jpg",
     cuisine: "Japanese",
     cookingTime: 60,
     tags: ["Healthy", "Seafood", "Japanese"],
@@ -101,6 +105,7 @@ export const mockRecipes = [
   {
     id: 5,
     title: "Italian Margherita Pizza",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021400/Italian_Margherita_Pizza_ziqilr.jpg",
     cuisine: "Italian",
     cookingTime: 90,
     tags: ["Vegetarian", "Italian"],
@@ -125,6 +130,7 @@ export const mockRecipes = [
   {
     id: 6,
     title: "Mexican Tacos al Pastor",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021406/Mexican_Tacos_al_Pastor_yrufce.jpg",
     cuisine: "Mexican",
     cookingTime: 120,
     tags: ["Spicy", "Mexican"],
@@ -149,6 +155,7 @@ export const mockRecipes = [
   {
     id: 7,
     title: "Indian Butter Chicken",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021403/Indian_Butter_Chicken_gmsvsn.jpg",
     cuisine: "Indian",
     cookingTime: 45,
     tags: ["Spicy", "Indian"],
@@ -173,6 +180,7 @@ export const mockRecipes = [
   {
     id: 8,
     title: "Greek Moussaka",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021399/Greek_Moussaka_jqz4qy.jpg",
     cuisine: "Greek",
     cookingTime: 150,
     tags: ["Traditional", "Greek"],
@@ -197,6 +205,7 @@ export const mockRecipes = [
   {
     id: 9,
     title: "Chinese Fried Rice",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021401/Chinese_Fried_Rice_slu39d.jpg",
     cuisine: "Chinese",
     cookingTime: 20,
     tags: ["Quick", "Vegetarian", "Chinese"],
@@ -221,6 +230,7 @@ export const mockRecipes = [
   {
     id: 10,
     title: "French Ratatouille",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021405/French_Ratatouille_uoyebt.jpg",
     cuisine: "French",
     cookingTime: 60,
     tags: ["Healthy", "Vegetarian", "French"],
@@ -245,6 +255,7 @@ export const mockRecipes = [
   {
     id: 11,
     title: "Spanish Paella",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021405/Spanish_Paella_ayvdrm.jpg",
     cuisine: "Spanish",
     cookingTime: 90,
     tags: ["Seafood", "Spanish"],
@@ -269,6 +280,7 @@ export const mockRecipes = [
   {
     id: 12,
     title: "Turkish Kebabs",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021409/Turkish_Kebabs_n5qmoy.jpg",
     cuisine: "Turkish",
     cookingTime: 40,
     tags: ["Quick", "Grilled", "Turkish"],
@@ -293,6 +305,7 @@ export const mockRecipes = [
   {
     id: 13,
     title: "Moroccan Tagine",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021404/Moroccan_Tagine_c92jn1.jpg",
     cuisine: "Moroccan",
     cookingTime: 180,
     tags: ["Traditional", "Moroccan"],
@@ -317,6 +330,7 @@ export const mockRecipes = [
   {
     id: 14,
     title: "Vietnamese Banh Mi",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021406/Vietnamese_Banh_Mi_qeakb1.jpg",
     cuisine: "Vietnamese",
     cookingTime: 25,
     tags: ["Quick", "Vietnamese"],
@@ -341,6 +355,7 @@ export const mockRecipes = [
   {
     id: 15,
     title: "Korean Kimchi Jjigae",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021406/Korean_Kimchi_Jjigae_nucx9s.jpg",
     cuisine: "Korean",
     cookingTime: 30,
     tags: ["Spicy", "Korean"],
@@ -365,6 +380,7 @@ export const mockRecipes = [
   {
     id: 16,
     title: "Thai Pad Thai",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021408/Thai_Pad_Thai_kdmzna.jpg",
     cuisine: "Thai",
     cookingTime: 25,
     tags: ["Quick", "Thai"],
@@ -389,6 +405,7 @@ export const mockRecipes = [
   {
     id: 17,
     title: "Japanese Ramen",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021405/Japanese_Ramen_tyyoym.jpg",
     cuisine: "Japanese",
     cookingTime: 120,
     tags: ["Traditional", "Japanese"],
@@ -413,6 +430,7 @@ export const mockRecipes = [
   {
     id: 18,
     title: "Italian Carbonara",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021400/Italian_Carbonara_upxeh9.jpg",
     cuisine: "Italian",
     cookingTime: 20,
     tags: ["Quick", "Italian"],
@@ -437,6 +455,7 @@ export const mockRecipes = [
   {
     id: 19,
     title: "Mexican Guacamole",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021403/Mexican_Guacamole_o9lhla.jpg",
     cuisine: "Mexican",
     cookingTime: 15,
     tags: ["Quick", "Healthy", "Vegetarian", "Mexican"],
@@ -461,6 +480,7 @@ export const mockRecipes = [
   {
     id: 20,
     title: "Indian Samosas",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021404/Indian_Samosas_pkksyg.jpg",
     cuisine: "Indian",
     cookingTime: 60,
     tags: ["Vegetarian", "Indian"],
@@ -485,6 +505,7 @@ export const mockRecipes = [
   {
     id: 21,
     title: "Greek Tzatziki",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021401/Greek_Tzatziki_qqm3ud.jpg",
     cuisine: "Greek",
     cookingTime: 20,
     tags: ["Quick", "Healthy", "Vegetarian", "Greek"],
@@ -509,6 +530,7 @@ export const mockRecipes = [
   {
     id: 22,
     title: "Chinese Dumplings",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021398/Chinese_Dumplings_cotnmw.jpg",
     cuisine: "Chinese",
     cookingTime: 45,
     tags: ["Traditional", "Chinese"],
@@ -533,6 +555,7 @@ export const mockRecipes = [
   {
     id: 23,
     title: "French Croissants",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021399/French_Croissants_sjucug.jpg",
     cuisine: "French",
     cookingTime: 480,
     tags: ["Traditional", "Bakery", "French"],
@@ -557,6 +580,7 @@ export const mockRecipes = [
   {
     id: 24,
     title: "Vietnamese Spring Rolls",
+    imageUrl: "https://res.cloudinary.com/dvbibylda/image/upload/v1767021408/Vietnamese_Spring_Rolls_xgmvtq.jpg",
     cuisine: "Vietnamese",
     cookingTime: 30,
     tags: ["Healthy", "Vegetarian", "Vietnamese"],

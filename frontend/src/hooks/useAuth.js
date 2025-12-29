@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { apiCreateInteraction, apiDeleteInteraction, apiGetRecipes } from '../utils/api.js';
 
 // localStorage keys
 const USER_KEY = 'sr-user';
@@ -109,44 +110,185 @@ export const useAuth = () => {
 export const useSavedRecipes = () => {
   const [savedIds, setSavedIds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const savedIdsRef = useRef([]);
+  const opQueueRef = useRef(Promise.resolve());
+  const [savedStorageKey, setSavedStorageKey] = useState(() => {
+    const u = readStoredUser();
+    const userKey = u?._id || u?.id || u?.email || u?.googleSub;
+    return userKey ? `${SAVED_KEY}:${String(userKey)}` : '';
+  });
 
-  // Load saved recipes from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(SAVED_KEY);
-    if (stored) {
-      setSavedIds(JSON.parse(stored));
+  const getSavedKey = useCallback((recipeOrId) => {
+    if (recipeOrId == null) return '';
+    if (typeof recipeOrId === 'object') {
+      if (recipeOrId._id != null) return String(recipeOrId._id);
+      if (recipeOrId.id != null) return String(recipeOrId.id);
+      return '';
     }
-    setIsLoading(false);
+    return String(recipeOrId);
   }, []);
 
+  useEffect(() => {
+    const syncKey = () => {
+      const u = readStoredUser();
+      const userKey = u?._id || u?.id || u?.email || u?.googleSub;
+      setSavedStorageKey(userKey ? `${SAVED_KEY}:${String(userKey)}` : '');
+    };
+
+    window.addEventListener('storage', syncKey);
+    window.addEventListener(AUTH_EVENT, syncKey);
+    syncKey();
+
+    return () => {
+      window.removeEventListener('storage', syncKey);
+      window.removeEventListener(AUTH_EVENT, syncKey);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!savedStorageKey) {
+      setSavedIds([]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const legacy = localStorage.getItem(SAVED_KEY);
+      const existing = localStorage.getItem(savedStorageKey);
+      if (legacy && !existing) {
+        localStorage.setItem(savedStorageKey, legacy);
+        localStorage.removeItem(SAVED_KEY);
+      }
+
+      const stored = localStorage.getItem(savedStorageKey);
+      setSavedIds(stored ? JSON.parse(stored) : []);
+    } catch {
+      setSavedIds([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [savedStorageKey]);
+
+  useEffect(() => {
+    savedIdsRef.current = Array.isArray(savedIds) ? savedIds : [];
+  }, [savedIds]);
+
+  // One-time migration: numeric recipe.id -> recipe._id (ObjectId string)
+  useEffect(() => {
+    let cancelled = false;
+
+    const migrate = async () => {
+      const current = Array.isArray(savedIds) ? savedIds : [];
+      if (current.length === 0) return;
+
+      const hasLegacyNumeric = current.some((x) => {
+        if (x == null) return false;
+        const s = String(x);
+        const isObjectId = /^[a-f0-9]{24}$/i.test(s);
+        const asNum = Number(s);
+        return !isObjectId && Number.isFinite(asNum);
+      });
+
+      if (!hasLegacyNumeric) return;
+
+      try {
+        const data = await apiGetRecipes({ limit: 500 });
+        const recipes = Array.isArray(data?.items) ? data.items : [];
+        const idToObjectId = new Map(recipes.map((r) => [String(r?.id), String(r?._id)]));
+
+        const migrated = current
+          .map((x) => {
+            const key = String(x);
+            const mapped = idToObjectId.get(key);
+            return mapped || key;
+          })
+          .filter(Boolean);
+
+        const unique = Array.from(new Set(migrated));
+        if (cancelled) return;
+
+        setSavedIds(unique);
+        if (savedStorageKey) {
+          localStorage.setItem(savedStorageKey, JSON.stringify(unique));
+        }
+      } catch {
+        // If migration fails, keep legacy ids; app continues to work.
+      }
+    };
+
+    migrate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [savedIds, savedStorageKey]);
+
   // Toggle save/unsave recipe
-  const toggleSave = (recipeId) => {
-    setSavedIds(prev => {
-      const newSaved = prev.includes(recipeId)
-        ? prev.filter(id => id !== recipeId)
-        : [...prev, recipeId];
-      
-      localStorage.setItem(SAVED_KEY, JSON.stringify(newSaved));
-      
-      // In production: would call POST /api/interactions/save
-      // await fetch('/api/interactions/save', { 
-      //   method: 'POST', 
-      //   body: JSON.stringify({ recipeId, action: newSaved.includes(recipeId) ? 'save' : 'unsave' })
-      // });
-      
-      return newSaved;
-    });
-  };
+  const toggleSave = useCallback(async (recipe) => {
+    const key = getSavedKey(recipe);
+    if (!key) {
+      throw new Error('Invalid recipe');
+    }
+
+    if (!savedStorageKey) {
+      throw new Error('Missing user');
+    }
+
+    const run = async () => {
+      let prevSaved = savedIdsRef.current;
+      try {
+        const stored = localStorage.getItem(savedStorageKey);
+        prevSaved = stored ? JSON.parse(stored) : savedIdsRef.current;
+        if (!Array.isArray(prevSaved)) prevSaved = [];
+      } catch {
+        prevSaved = savedIdsRef.current;
+      }
+
+      const wasSaved = prevSaved.includes(key);
+      const nextSaved = wasSaved
+        ? prevSaved.filter((id) => id !== key)
+        : [...prevSaved, key];
+
+      setSavedIds(nextSaved);
+      localStorage.setItem(savedStorageKey, JSON.stringify(nextSaved));
+
+      try {
+        if (!wasSaved) {
+          await apiCreateInteraction({
+            recipeId: recipe?._id ? String(recipe._id) : key,
+            type: 'save',
+            weight: 3,
+          });
+        } else {
+          await apiDeleteInteraction({
+            recipeId: recipe?._id ? String(recipe._id) : key,
+            type: 'save',
+          });
+        }
+      } catch (err) {
+        setSavedIds(prevSaved);
+        localStorage.setItem(savedStorageKey, JSON.stringify(prevSaved));
+        throw err;
+      }
+    };
+
+    opQueueRef.current = opQueueRef.current.then(run, run);
+    return opQueueRef.current;
+  }, [getSavedKey, savedStorageKey]);
 
   // Check if recipe is saved
-  const isSaved = (recipeId) => {
-    return savedIds.includes(recipeId);
+  const isSaved = (recipe) => {
+    const key = getSavedKey(recipe);
+    if (!key) return false;
+    return savedIds.includes(key);
   };
 
   // Clear all saved recipes
   const clearSaved = () => {
     setSavedIds([]);
-    localStorage.removeItem(SAVED_KEY);
+    if (savedStorageKey) {
+      localStorage.removeItem(savedStorageKey);
+    }
     
     // In production: would call DELETE /api/interactions/saved
     // await fetch('/api/interactions/saved', { method: 'DELETE' });

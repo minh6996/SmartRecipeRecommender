@@ -1,9 +1,9 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import TagPill from '../components/TagPill.jsx';
-import { getRecipeById } from '../data/recipes.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useSavedRecipes } from '../hooks/useAuth.js';
+import { apiGetRecipeById } from '../utils/api.js';
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -16,26 +16,41 @@ const RecipeDetail = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Load recipe data
-    const recipeData = getRecipeById(id);
-    
-    if (recipeData) {
-      setRecipe(recipeData);
-      setLoading(false);
-    } else {
-      setError('Recipe not found');
-      setLoading(false);
-    }
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiGetRecipeById(id);
+        if (!mounted) return;
+        setRecipe(data.item);
+      } catch (err) {
+        if (!mounted) return;
+        setError(err?.message || 'Recipe not found');
+      } finally {
+        if (!mounted) return;
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (!isAuthenticated) {
       // Redirect to login with return URL
       navigate(`/login?redirect=${encodeURIComponent(`/recipes/${id}`)}`);
       return;
     }
     
-    toggleSave(parseInt(id));
+    try {
+      await toggleSave(recipe);
+    } catch (err) {
+      console.error(err);
+      window.alert(err?.message || 'Failed to save recipe');
+    }
   };
 
   // Generate placeholder color
@@ -75,7 +90,7 @@ const RecipeDetail = () => {
     );
   }
 
-  const saved = isSaved(recipe.id);
+  const saved = isSaved(recipe);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -90,25 +105,35 @@ const RecipeDetail = () => {
 
       {/* Recipe Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-        {/* Image placeholder */}
-        <div className={`h-64 ${placeholderColor} flex items-center justify-center`}>
-          <div className="text-center">
-            <svg 
-              className="w-20 h-20 mx-auto mb-3 text-gray-600" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1.5} 
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" 
-              />
-            </svg>
-            <p className="text-gray-700 font-medium">{recipe.cuisine} Cuisine</p>
+        {/* Image */}
+        {recipe?.imageUrl ? (
+          <div className="h-64 bg-gray-100 overflow-hidden">
+            <img
+              src={recipe.imageUrl}
+              alt={recipe.title}
+              className="w-full h-full object-cover"
+            />
           </div>
-        </div>
+        ) : (
+          <div className={`h-64 ${placeholderColor} flex items-center justify-center`}>
+            <div className="text-center">
+              <svg 
+                className="w-20 h-20 mx-auto mb-3 text-gray-600" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={1.5} 
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" 
+                />
+              </svg>
+              <p className="text-gray-700 font-medium">{recipe.cuisine} Cuisine</p>
+            </div>
+          </div>
+        )}
 
         {/* Recipe Info */}
         <div className="p-6">

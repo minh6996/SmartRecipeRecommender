@@ -1,52 +1,107 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import RecipeGrid from '../components/RecipeGrid.jsx';
 import { useAuth, useSavedRecipes } from '../hooks/useAuth.js';
 import { getRecommendations } from '../utils/recommendations.js';
-import { mockRecipes } from '../data/recipes.js';
+import { apiGetRecipes } from '../utils/api.js';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
   const { savedIds } = useSavedRecipes();
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await apiGetRecipes({ limit: 500 });
+        if (!mounted) return;
+        setRecipes(data.items || []);
+      } catch (err) {
+        if (!mounted) return;
+        setError(err?.message || 'Failed to load recipes');
+      } finally {
+        if (!mounted) return;
+        setLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
   
   // Get recommendations based on saved recipes
-  const recommendations = getRecommendations(savedIds, 6);
+  const recommendations = getRecommendations(recipes, savedIds, 6);
   
   // Get all recipes for the "All Recipes" section
-  const allRecipes = mockRecipes.slice(0, 12); // Show first 12 recipes
+  const allRecipes = recipes.slice(0, 12); // Show first 12 recipes
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-48 bg-gray-200 rounded-lg mb-8"></div>
+        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-gray-200 h-64 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Failed to load recipes</h2>
+        <p className="text-gray-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">
       {/* Hero Section */}
-      <section className="text-center py-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Welcome to Smart Recipe Recommender
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-          Discover personalized recipes based on your preferences and saved favorites. 
-          Our intelligent system learns from your taste to recommend dishes you'll love.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Link
-            to="/recipes"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
-            Browse All Recipes
-          </Link>
-          {isAuthenticated ? (
+      <section
+        className="relative text-center py-16 rounded-lg overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/hero.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-black/55" />
+        <div className="relative px-6">
+          <h1 className="text-4xl font-bold text-white mb-4 drop-shadow">
+            Welcome to Smart Recipe Recommender
+          </h1>
+          <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8 drop-shadow">
+            Discover personalized recipes based on your preferences and saved favorites.
+            Our intelligent system learns from your taste to recommend dishes you'll love.
+          </p>
+          <div className="flex justify-center gap-4">
             <Link
-              to="/recommendations"
-              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              to="/recipes"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             >
-              My Recommendations
+              Browse All Recipes
             </Link>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Sign In for Recommendations
-            </Link>
-          )}
+            {isAuthenticated ? (
+              <Link
+                to="/recommendations"
+                className="inline-flex items-center px-6 py-3 border border-white/30 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
+              >
+                My Recommendations
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center px-6 py-3 border border-white/30 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
+              >
+                Sign In for Recommendations
+              </Link>
+            )}
+          </div>
         </div>
       </section>
 
