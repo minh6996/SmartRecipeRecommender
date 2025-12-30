@@ -33,6 +33,8 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ message: 'Missing type' });
     }
 
+    const normalizedType = String(type).trim() || 'save';
+
     const resolvedRecipeId = await parseRecipeObjectId(recipeId ?? recipeNumericId);
     if (!resolvedRecipeId) {
       return res.status(400).json({ message: 'Invalid recipeId' });
@@ -43,13 +45,25 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(401).json({ message: 'Invalid user in token' });
     }
 
-    const doc = await Interaction.create({
-      userId: new mongoose.Types.ObjectId(userId),
-      recipeId: resolvedRecipeId,
-      type,
-      weight: typeof weight === 'number' ? weight : 1,
-      createdAt: new Date(),
-    });
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const safeWeight = typeof weight === 'number' && Number.isFinite(weight) ? weight : 1;
+
+    const doc = await Interaction.findOneAndUpdate(
+      {
+        userId: userObjectId,
+        recipeId: resolvedRecipeId,
+        type: normalizedType,
+      },
+      {
+        $set: {
+          weight: safeWeight,
+        },
+        $setOnInsert: {
+          createdAt: new Date(),
+        },
+      },
+      { new: true, upsert: true }
+    );
 
     return res.status(201).json({
       item: {

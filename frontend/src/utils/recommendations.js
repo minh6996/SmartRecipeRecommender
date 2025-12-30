@@ -187,6 +187,85 @@ export const getPersonalizedRecommendations = ({ recipes, userSavedRecipeIds, to
   return scored.slice(0, k).map((x) => x.recipe);
 };
 
+export const getPersonalizedRecommendationDiagnostics = ({ recipes, userSavedRecipeIds, topK }) => {
+  const allRecipes = Array.isArray(recipes) ? recipes : [];
+  const k = typeof topK === 'number' && topK > 0 ? Math.floor(topK) : 10;
+
+  const savedSet = new Set((Array.isArray(userSavedRecipeIds) ? userSavedRecipeIds : []).map(String));
+  if (savedSet.size === 0) {
+    return [];
+  }
+
+  const { vectors, norms } = buildTfidfIndex(allRecipes);
+
+  const weight = 3;
+  const denom = weight * savedSet.size;
+  const userVec = new Map();
+
+  for (const rid of savedSet) {
+    const v = vectors.get(String(rid));
+    if (!v) continue;
+    for (const [idx, val] of v.entries()) {
+      userVec.set(idx, (userVec.get(idx) || 0) + weight * val);
+    }
+  }
+
+  if (userVec.size === 0) {
+    return [];
+  }
+
+  for (const [idx, val] of userVec.entries()) {
+    userVec.set(idx, val / denom);
+  }
+
+  const userNorm = Math.sqrt(sparseDot(userVec, userVec));
+  if (!Number.isFinite(userNorm) || userNorm === 0) {
+    return [];
+  }
+
+  let popMin = Infinity;
+  let popMax = -Infinity;
+  for (const r of allRecipes) {
+    const p = typeof r?.popularity === 'number' ? r.popularity : 0;
+    if (p < popMin) popMin = p;
+    if (p > popMax) popMax = p;
+  }
+  const eps = 1e-9;
+
+  const scored = [];
+  for (const recipe of allRecipes) {
+    const rid = getRecipeKey(recipe);
+    if (!rid || savedSet.has(String(rid))) continue;
+
+    const vj = vectors.get(rid);
+    const normVj = norms.get(rid) || 0;
+    const cosineSim = normVj > 0 ? sparseDot(userVec, vj) / (userNorm * normVj) : 0;
+
+    const p = typeof recipe?.popularity === 'number' ? recipe.popularity : 0;
+    const popScore = (p - popMin) / (popMax - popMin + eps);
+
+    let ctxScore = 0;
+    if (typeof recipe?.cookingTime === 'number' && recipe.cookingTime <= 30) {
+      ctxScore += 0.05;
+    }
+
+    const finalScore = 0.7 * cosineSim + 0.2 * popScore + 0.1 * ctxScore;
+    const finalScoreFormula = `0.7*${cosineSim.toFixed(6)} + 0.2*${popScore.toFixed(6)} + 0.1*${ctxScore.toFixed(6)}`;
+
+    scored.push({
+      recipe,
+      cosineSim,
+      popScore,
+      ctxScore,
+      finalScore,
+      finalScoreFormula,
+    });
+  }
+
+  scored.sort((a, b) => b.finalScore - a.finalScore);
+  return scored.slice(0, k);
+};
+
 export const getRecommendations = (recipes, savedRecipeIds, limit = 10) => {
   const allRecipes = Array.isArray(recipes) ? recipes : [];
   const saved = Array.isArray(savedRecipeIds) ? savedRecipeIds : [];
@@ -199,6 +278,24 @@ export const getRecommendations = (recipes, savedRecipeIds, limit = 10) => {
     .filter(Boolean);
 
   return getPersonalizedRecommendations({
+    recipes: allRecipes,
+    userSavedRecipeIds,
+    topK: limit,
+  });
+};
+
+export const getRecommendationDiagnostics = (recipes, savedRecipeIds, limit = 10) => {
+  const allRecipes = Array.isArray(recipes) ? recipes : [];
+  const saved = Array.isArray(savedRecipeIds) ? savedRecipeIds : [];
+
+  const userSavedRecipeIds = saved
+    .map((sid) => {
+      const match = allRecipes.find((r) => String(r?.id) === String(sid));
+      return match ? getRecipeKey(match) : String(sid);
+    })
+    .filter(Boolean);
+
+  return getPersonalizedRecommendationDiagnostics({
     recipes: allRecipes,
     userSavedRecipeIds,
     topK: limit,

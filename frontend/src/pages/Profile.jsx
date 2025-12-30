@@ -5,6 +5,7 @@ import RecipeCard from '../components/RecipeCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import { useEffect, useMemo, useState } from 'react';
 import { apiGetRecipes } from '../utils/api.js';
+import { getRecommendationDiagnostics } from '../utils/recommendations.js';
 
 const Profile = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -12,6 +13,7 @@ const Profile = () => {
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [recipesError, setRecipesError] = useState('');
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -67,6 +69,75 @@ const Profile = () => {
   const handleClearSaved = () => {
     if (window.confirm('Are you sure you want to clear all saved recipes? This action cannot be undone.')) {
       clearSaved();
+    }
+  };
+
+  const handlePrintSimilarity = async () => {
+    if (!savedIds || savedIds.length === 0) {
+      window.alert('You have no saved recipes yet. Save a few recipes first to generate similarity scores.');
+      return;
+    }
+
+    try {
+      setIsPrinting(true);
+      const data = await apiGetRecipes({ limit: 500 });
+      const all = Array.isArray(data?.items) ? data.items : [];
+      const rows = getRecommendationDiagnostics(all, savedIds, 50);
+
+      const csvEscape = (v) => {
+        const s = v == null ? '' : String(v);
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+
+      const header = [
+        'rank',
+        'recipeTitle',
+        'recipeId',
+        'recipeMongoId',
+        'cosineSim',
+        'popScore',
+        'ctxScore',
+        'finalScore',
+        'finalScoreFormula',
+      ];
+
+      const lines = [header.join(',')];
+      rows.forEach((r, idx) => {
+        const recipe = r?.recipe;
+        const line = [
+          idx + 1,
+          csvEscape(recipe?.title),
+          recipe?.id ?? '',
+          csvEscape(recipe?._id),
+          Number(r?.cosineSim ?? 0).toFixed(6),
+          Number(r?.popScore ?? 0).toFixed(6),
+          Number(r?.ctxScore ?? 0).toFixed(6),
+          Number(r?.finalScore ?? 0).toFixed(6),
+          csvEscape(r?.finalScoreFormula),
+        ].join(',');
+        lines.push(line);
+      });
+
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const filename = `similarity_${y}${m}${d}.csv`;
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      window.alert(err?.message || 'Failed to generate similarity report');
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -235,7 +306,19 @@ const Profile = () => {
         )}
       </div>
 
-      <div />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Actions</h3>
+        <div className="space-y-3">
+          <button
+            onClick={handlePrintSimilarity}
+            disabled={isPrinting}
+            className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="text-gray-700">Print similarity</span>
+            <span className="text-sm text-gray-500">{isPrinting ? 'Generating…' : 'Download CSV'}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

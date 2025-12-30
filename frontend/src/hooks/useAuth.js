@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { apiCreateInteraction, apiDeleteInteraction, apiGetRecipes } from '../utils/api.js';
+import {
+  apiCreateInteraction,
+  apiDeleteInteraction,
+  apiGetMyInteractions,
+  apiGetRecipes,
+} from '../utils/api.js';
 
 // localStorage keys
 const USER_KEY = 'sr-user';
@@ -157,6 +162,51 @@ export const useSavedRecipes = () => {
     } finally {
       setIsLoading(false);
     }
+  }, [savedStorageKey]);
+
+  // Sync saved recipes from backend interactions so saved list persists across devices/browsers.
+  useEffect(() => {
+    if (!savedStorageKey) return;
+
+    let cancelled = false;
+
+    const syncFromBackend = async () => {
+      try {
+        const data = await apiGetMyInteractions({ type: 'save' });
+        const items = Array.isArray(data?.items) ? data.items : [];
+
+        const idsFromDb = items
+          .map((x) => x?.recipeId)
+          .filter(Boolean)
+          .map(String);
+
+        if (idsFromDb.length === 0) return;
+
+        let local = [];
+        try {
+          const stored = localStorage.getItem(savedStorageKey);
+          local = stored ? JSON.parse(stored) : [];
+          if (!Array.isArray(local)) local = [];
+        } catch {
+          local = [];
+        }
+
+        const merged = Array.from(new Set([...local.map(String), ...idsFromDb]));
+        if (cancelled) return;
+
+        setSavedIds(merged);
+        localStorage.setItem(savedStorageKey, JSON.stringify(merged));
+      } catch {
+        // If user is not logged in (missing token) or backend is down, keep local state.
+      }
+    };
+
+    // Avoid blocking UI: run in background.
+    void syncFromBackend();
+
+    return () => {
+      cancelled = true;
+    };
   }, [savedStorageKey]);
 
   useEffect(() => {

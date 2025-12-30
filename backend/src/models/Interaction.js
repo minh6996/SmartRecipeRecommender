@@ -11,7 +11,7 @@ const interactionSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
-interactionSchema.index({ userId: 1, recipeId: 1, type: 1 });
+interactionSchema.index({ userId: 1, recipeId: 1, type: 1 }, { unique: true });
 
 export const Interaction =
   mongoose.models.Interaction || mongoose.model('Interaction', interactionSchema);

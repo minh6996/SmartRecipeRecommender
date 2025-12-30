@@ -74,3 +74,21 @@ export const apiDeleteInteraction = async ({ recipeId, recipeNumericId, type } =
     body: JSON.stringify({ recipeId, recipeNumericId, type }),
   });
 };
+
+export const apiGetMyInteractions = async ({ type } = {}) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('Missing auth token');
+  }
+
+  const params = new URLSearchParams();
+  if (type) params.set('type', String(type));
+  const qs = params.toString();
+
+  const url = `${getApiBaseUrl()}/api/interactions/me${qs ? `?${qs}` : ''}`;
+  return fetchJson(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
