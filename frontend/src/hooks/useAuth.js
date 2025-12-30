@@ -42,18 +42,9 @@ export const useAuth = () => {
 
   // Login function - mock accepts any non-empty email/password
   const login = useCallback((email, password) => {
-    if (!email || !password) {
-      throw new Error('Email and password are required');
-    }
-    
-    const userData = { email };
-    setUser(userData);
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
-    localStorage.setItem(TOKEN_KEY, 'mock');
-    window.dispatchEvent(new Event(AUTH_EVENT));
-    
-    // In production: would call POST /api/auth/login
-    // return await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    void email;
+    void password;
+    throw new Error('Email/password login is disabled. Please sign in with Google.');
   }, []);
 
   const googleLogin = useCallback(async (credential) => {
@@ -95,7 +86,6 @@ export const useAuth = () => {
   return {
     user,
     isLoading,
-    login,
     googleLogin,
     logout,
     token,
