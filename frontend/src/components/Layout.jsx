@@ -10,58 +10,69 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 font-sans">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="fixed top-0 left-0 right-0 z-50 glass shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Title */}
-            <Link to="/" className="flex items-center gap-3 text-2xl font-bold text-gray-900">
+            <Link to="/" className="flex items-center gap-3 text-xl font-bold text-slate-800 tracking-tight hover:text-primary-600 transition-colors">
               <img src="/logo.svg" alt="Smart Recipe Recommender" className="h-8 w-8" />
-              <span>Smart Recipe Recommender</span>
+              <span>Smart Recipe<span className="text-primary-600">Recommender</span></span>
             </Link>
 
             {/* Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex items-center space-x-1">
               <Link
                 to="/"
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  isActive('/')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`px-4 py-2 text-sm font-semibold rounded-full transition-all ${isActive('/')
+                  ? 'text-primary-700 bg-primary-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 Home
               </Link>
               <Link
                 to="/recipes"
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  isActive('/recipes')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`px-4 py-2 text-sm font-semibold rounded-full transition-all ${isActive('/recipes')
+                  ? 'text-primary-700 bg-primary-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 Recipes
               </Link>
               <Link
                 to="/recommendations"
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  isActive('/recommendations')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`px-4 py-2 text-sm font-semibold rounded-full transition-all ${isActive('/recommendations')
+                  ? 'text-primary-700 bg-primary-50'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 Recommendations
               </Link>
+
+              <div className="h-6 w-px bg-slate-200 mx-2"></div>
+
+              {user?.role === 'admin' && (
+                <Link
+                  to="/add-recipe"
+                  className={`px-4 py-2 text-sm font-semibold rounded-full transition-all mr-2 ${isActive('/add-recipe')
+                    ? 'text-white bg-primary-600 shadow-md'
+                    : 'text-primary-600 bg-white border border-primary-200 hover:bg-primary-50'
+                    }`}
+                >
+                  + Add Recipe
+                </Link>
+              )}
+
               <Link
                 to={isAuthenticated ? "/profile" : "/login"}
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  isActive('/profile') || isActive('/login')
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                }`}
+                className={`ml-2 px-5 py-2 text-sm font-semibold rounded-full transition-all shadow-sm ${isActive('/profile') || isActive('/login')
+                  ? 'bg-slate-800 text-white hover:bg-slate-700 hover:shadow-md'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
               >
-                {isAuthenticated ? 'Profile' : 'Login'}
+                {isAuthenticated ? 'Profile' : 'Sign In'}
               </Link>
             </nav>
 
@@ -78,7 +89,7 @@ const Layout = () => {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
         <Outlet />
       </main>
 

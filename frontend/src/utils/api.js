@@ -41,6 +41,61 @@ export const apiGetRecipeById = async (id) => {
   return fetchJson(url);
 };
 
+export const apiCreateRecipe = async (data) => {
+  const token = getToken();
+  if (!token) throw new Error('Missing auth token');
+
+  const url = `${getApiBaseUrl()}/api/recipes`;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (!(data instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  return fetchJson(url, {
+    method: 'POST',
+    headers,
+    body: data instanceof FormData ? data : JSON.stringify(data),
+  });
+};
+
+export const apiUpdateRecipe = async (id, data) => {
+  const token = getToken();
+  if (!token) throw new Error('Missing auth token');
+
+  const url = `${getApiBaseUrl()}/api/recipes/${id}`;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (!(data instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  return fetchJson(url, {
+    method: 'PUT',
+    headers,
+    body: data instanceof FormData ? data : JSON.stringify(data),
+  });
+};
+
+export const apiDeleteRecipe = async (id) => {
+  const token = getToken();
+  if (!token) throw new Error('Missing auth token');
+
+  const url = `${getApiBaseUrl()}/api/recipes/${id}`;
+  return fetchJson(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 export const apiCreateInteraction = async ({ recipeId, recipeNumericId, type, weight } = {}) => {
   const token = getToken();
   if (!token) {

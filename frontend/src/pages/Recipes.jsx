@@ -43,8 +43,8 @@ const Recipes = () => {
 
   // Toggle tag selection
   const toggleTag = (tag) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
+    setSelectedTags(prev =>
+      prev.includes(tag)
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     );
@@ -59,11 +59,9 @@ const Recipes = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">All Recipes</h1>
-        <p className="text-gray-600">
-          Browse our collection of {recipes.length} delicious recipes from around the world
-        </p>
+      <div className="text-center pt-8 pb-4">
+        <h1 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">What are we cooking?</h1>
+
       </div>
 
       {isLoading && (
@@ -84,19 +82,19 @@ const Recipes = () => {
       )}
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="glass p-6 rounded-2xl shadow-sm border border-slate-100">
         {/* Search Bar */}
-        <div className="mb-4">
-          <div className="relative">
+        <div className="mb-6">
+          <div className="relative group">
             <input
               type="text"
               placeholder="Search recipes by title, cuisine, or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all shadow-sm group-hover:border-primary-300"
             />
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+              className="absolute left-4 top-3.5 w-5 h-5 text-slate-400 group-hover:text-primary-500 transition-colors"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -114,17 +112,20 @@ const Recipes = () => {
         {/* Filter Tags */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-700">Filter by tags:</h3>
+            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Filter by tags</h3>
             {(searchQuery || selectedTags.length > 0) && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-blue-600 hover:text-blue-800"
+                className="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1 transition-colors"
               >
-                Clear all filters
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Clear filters
               </button>
             )}
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {filterTags.map((tag) => (
               <TagPill
@@ -142,12 +143,12 @@ const Recipes = () => {
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <p className="text-gray-600">
-          {filteredRecipes.length === 0 
-            ? 'No recipes found' 
+          {filteredRecipes.length === 0
+            ? 'No recipes found'
             : `Showing ${filteredRecipes.length} of ${recipes.length} recipes`
           }
         </p>
-        
+
         {/* Active filters display */}
         {(searchQuery || selectedTags.length > 0) && (
           <div className="flex items-center gap-2 text-sm text-gray-500">

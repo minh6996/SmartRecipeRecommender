@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
 
     googleSub: { type: String, index: true, unique: true, sparse: true },
     provider: { type: String, default: 'google' },
+    role: { type: String, default: 'user', enum: ['user', 'admin'] },
 
     lastLoginAt: { type: Date },
   },

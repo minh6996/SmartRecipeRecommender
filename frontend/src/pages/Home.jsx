@@ -33,10 +33,10 @@ const Home = () => {
       mounted = false;
     };
   }, []);
-  
+
   // Get recommendations based on saved recipes
   const recommendations = getRecommendations(recipes, savedIds, 6);
-  
+
   // Get all recipes for the "All Recipes" section
   const allRecipes = recipes.slice(0, 12); // Show first 12 recipes
 
@@ -64,41 +64,36 @@ const Home = () => {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16 pb-12">
       {/* Hero Section */}
-      <section
-        className="relative text-center py-16 rounded-lg overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-black/55" />
-        <div className="relative px-6">
-          <h1 className="text-4xl font-bold text-white mb-4 drop-shadow">
-            Welcome to Smart Recipe Recommender
+      <section className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 to-primary-600/80 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-40" />
+
+        <div className="relative px-8 py-24 text-center max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-lg text-white">
+            Discover Your Next <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary-300 to-secondary-500">
+              Favorite Meal
+            </span>
           </h1>
-          <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8 drop-shadow">
-            Discover personalized recipes based on your preferences and saved favorites.
-            Our intelligent system learns from your taste to recommend dishes you'll love.
+          <p className="text-xl text-slate-100 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            Personalized recipe recommendations tailored to your unique taste.
+            Build your cookbook and explore culinary delights.
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/recipes"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-500 shadow-lg shadow-primary-600/40 transition-all hover:-translate-y-1"
             >
-              Browse All Recipes
+              Start Exploring
             </Link>
-            {isAuthenticated ? (
-              <Link
-                to="/recommendations"
-                className="inline-flex items-center px-6 py-3 border border-white/30 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
-              >
-                My Recommendations
-              </Link>
-            ) : (
+            {!isAuthenticated && (
               <Link
                 to="/login"
-                className="inline-flex items-center px-6 py-3 border border-white/30 text-base font-medium rounded-md text-white bg-white/10 hover:bg-white/20"
+                className="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-primary-100 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm transition-all hover:-translate-y-1"
               >
-                Sign In for Recommendations
+                Sign In
               </Link>
             )}
           </div>
@@ -107,41 +102,35 @@ const Home = () => {
 
       {/* Recommended for You Section */}
       <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isAuthenticated && savedIds.length > 0 
-              ? "Recommended for You" 
-              : "Popular Recipes"
-            }
-          </h2>
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+              {isAuthenticated && savedIds.length > 0
+                ? "Picked Just For You"
+                : "Trending Now"
+              }
+            </h2>
+            <p className="text-slate-500">
+              {isAuthenticated && savedIds.length > 0
+                ? `Curated based on your ${savedIds.length} saved favorites`
+                : "Popular recipes from our community"
+              }
+            </p>
+          </div>
           {isAuthenticated && savedIds.length > 0 && (
             <Link
               to="/recommendations"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="group flex items-center gap-1 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
             >
-              View All →
+              View Full List
+              <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
           )}
         </div>
-        
-        {isAuthenticated && savedIds.length > 0 ? (
-          <div>
-            <p className="text-gray-600 mb-4">
-              Based on your {savedIds.length} saved {savedIds.length === 1 ? 'recipe' : 'recipes'}
-            </p>
-            <RecipeGrid recipes={recommendations} showSaveButton={true} />
-          </div>
-        ) : (
-          <div>
-            <p className="text-gray-600 mb-4">
-              {isAuthenticated 
-                ? "Start saving recipes to get personalized recommendations!"
-                : "Sign in to save recipes and get personalized recommendations."
-              }
-            </p>
-            <RecipeGrid recipes={recommendations} showSaveButton={true} />
-          </div>
-        )}
+
+        <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+          <RecipeGrid recipes={recommendations} showSaveButton={true} />
+        </div>
       </section>
 
       {/* All Recipes Section */}
@@ -155,7 +144,7 @@ const Home = () => {
             Browse All →
           </Link>
         </div>
-        
+
         <RecipeGrid recipes={allRecipes} showSaveButton={true} />
       </section>
 
@@ -176,7 +165,7 @@ const Home = () => {
               Our AI analyzes your saved recipes to suggest dishes you'll love
             </p>
           </div>
-          
+
           <div className="text-center">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -188,7 +177,7 @@ const Home = () => {
               Explore recipes from various cuisines and cooking styles
             </p>
           </div>
-          
+
           <div className="text-center">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

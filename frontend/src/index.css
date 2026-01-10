@@ -2,21 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for academic feel */
+/* Global base styles */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  @apply bg-slate-50 text-slate-800 antialiased;
 }
 
-/* Recipe card hover effects */
-.recipe-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Typography Enhancements */
+h1, h2, h3, h4, h5, h6 {
+  @apply tracking-tight font-bold text-slate-900;
 }
 
-.recipe-card:hover {
-  transform: translateY(-2px);
-}
-
-/* Smooth transitions for all interactive elements */
+/* Interactive Elements */
 a, button {
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Custom Utilities */
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+}
+

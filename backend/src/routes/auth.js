@@ -55,7 +55,7 @@ router.post('/google', async (req, res) => {
     );
 
     const token = jwt.sign(
-      { uid: user._id.toString(), email: user.email, name: user.name },
+      { uid: user._id.toString(), email: user.email, name: user.name, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -66,6 +66,7 @@ router.post('/google', async (req, res) => {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        role: user.role,
       },
       token,
     });
@@ -83,6 +84,7 @@ router.get('/me', requireAuth, async (req, res) => {
       email: user.email,
       name: user.name,
       picture: user.picture,
+      role: user.role,
     },
   });
 });

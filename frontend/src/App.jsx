@@ -6,6 +6,8 @@ import RecipeDetail from './pages/RecipeDetail.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Login from './pages/Login.jsx';
 import Profile from './pages/Profile.jsx';
+import AddRecipe from './pages/AddRecipe.jsx';
+import EditRecipe from './pages/EditRecipe.jsx';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="recommendations" element={<Recommendations />} />
           <Route path="login" element={<Login />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="add-recipe" element={<AddRecipe />} />
+          <Route path="recipes/:id/edit" element={<EditRecipe />} />
         </Route>
       </Routes>
     </BrowserRouter>
